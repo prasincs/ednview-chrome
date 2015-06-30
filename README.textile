@@ -1,4 +1,15 @@
-h2. JSONView for Chrome
+h2. EDNView for Chrome
+
+
+This was done as a quick hack to view edn in browser. YMMV. The rest of the text from the original text has been left intact.
+
+Uses:
+
+https://github.com/shaunxcode/jsedn
+
+https://github.com/jamiew/jsonview-chrome
+
+h2. Text from jsonview-chrome project 
 
 Formats & syntax highlights JSON viewed inside of the web browser! Yay
 

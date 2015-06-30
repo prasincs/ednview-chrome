@@ -3,8 +3,8 @@
  * Version 1.0
  * A Google Chrome extension to display JSON in a user-friendly format
  *
- * This is a chromeified version of the JSONView Firefox extension by Ben Hollis: 
- * http://jsonview.com 
+ * This is a chromeified version of the JSONView Firefox extension by Ben Hollis:
+ * http://jsonview.com
  * http://code.google.com/p/jsonview
  *
  * Also based on the XMLTree Chrome extension by Moonty & alan.stroop
@@ -21,18 +21,18 @@
 // e.g. if it's .html/.css/.php/etc assume it's not JSON (though w/ PHP that might not be the case..)
 this.data = document.body.innerHTML;
 this.uri = document.location.href;
-
 // Note: now using "*.json*" URI matching rather than these page regexes -- save CPU cycles!
 // var is_json = /^\s*(\{.*\})\s*$/.test(this.data);
 // var is_jsonp = /^.*\(\s*(\{.*\})\s*\)$/.test(this.data);
 // if(is_json || is_jsonp){
-  
+
 // Our manifest specifies that we only do URLs matching '.json', so attempt to sanitize any HTML
 // added by Chrome's "text/plain" or "text/html" handlers
-if(/^\<pre.*\>(.*)\<\/pre\>$/.test(this.data)){  
-  console.log("JSONView: data is wrapped in <pre>...</pre>, stripping HTML...");  
+//if(/^\<pre.*\>(.*)\<\/pre\>$/.test(this.data)){
+  console.log("JSONView: data is wrapped in <pre>...</pre>, stripping HTML...");
   this.data = this.data.replace(/<(?:.|\s)*?>/g, ''); //Aggressively strip HTML.
-}
+  this.data = JSON.stringify(jsedn.toJS(jsedn.parse(this.data)));
+//}
 
 // Test if what remains is JSON or JSONp
 var json_regex = /^\s*([\[\{].*[\}\]])\s*$/; // Ghetto, but it works
@@ -42,8 +42,8 @@ var is_json = json_regex.test(this.data);
 var is_jsonp = jsonp_regex.test(this.data);
 console.log("JSONView: is_json="+is_json+" is_jsonp="+is_jsonp);
 
-if(is_json || is_jsonp){
-   
+//if(is_json || is_jsonp){
+
   console.log("JSONView: sexytime!");
 
   // JSONFormatter json->HTML prototype straight from Firefox JSONView
@@ -73,7 +73,7 @@ if(is_json || is_jsonp){
       }
       else if (valueType == 'object') {
         output += this.objectToHTML(value);
-      } 
+      }
       else if (valueType == 'number') {
         output += this.decorateWithSpan(value, 'num');
       }
@@ -153,19 +153,19 @@ if(is_json || is_jsonp){
       // var output = '<div id="error">' + this.stringbundle.GetStringFromName('errorParsing') + '</div>';
       // output += '<h1>' + this.stringbundle.GetStringFromName('docContents') + ':</h1>';
       var output = '<div id="error">Error parsing JSON: '+error.message+'</div>';
-      output += '<h1>'+error.stack+':</h1>';      
+      output += '<h1>'+error.stack+':</h1>';
       output += '<div id="json">' + this.htmlEncode(data) + '</div>';
       return this.toHTML(output, uri + ' - Error');
     },
 
     // Wrap the HTML fragment in a full document. Used by jsonToHTML and errorPage.
     toHTML: function(content, title) {
-      return '<doctype html>' + 
+      return '<doctype html>' +
         '<html><head><title>' + title + '</title>' +
-        '<link rel="stylesheet" type="text/css" href="'+chrome.extension.getURL("default.css")+'">' + 
-        '<script type="text/javascript" src="'+chrome.extension.getURL("default.js")+'"></script>' + 
+        '<link rel="stylesheet" type="text/css" href="'+chrome.extension.getURL("default.css")+'">' +
+        '<script type="text/javascript" src="'+chrome.extension.getURL("default.js")+'"></script>' +
         '</head><body>' +
-        content + 
+        content +
         '</body></html>';
     }
   };
@@ -175,7 +175,7 @@ if(is_json || is_jsonp){
 
   // Sanitize & output -- all magic from JSONView Firefox
   this.jsonFormatter = new JSONFormatter();
-  
+
   // This regex attempts to match a JSONP structure:
   //    * Any amount of whitespace (including unicode nonbreaking spaces) between the start of the file and the callback name
   //    * Callback name (any valid JavaScript function name according to ECMA-262 Edition 3 spec)
@@ -189,7 +189,7 @@ if(is_json || is_jsonp){
   //    * A closing parenthesis, an optional semicolon, and any amount of whitespace (including unicode nonbreaking spaces) until the end of the file.
   // This will miss anything that has comments, or more than one callback, or requires modification before use.
   var outputDoc = '';
-  // text = text.match(jsonp_regex)[1]; 
+  // text = text.match(jsonp_regex)[1];
   var cleanData = '',
       callback = '';
 
@@ -202,13 +202,13 @@ if(is_json || is_jsonp){
     console.log("Vanilla JSON");
     cleanData = this.data;
   }
-  console.log(cleanData);
-  
+  //console.log(cleanData);
+
   // Covert, and catch exceptions on failure
   try {
     // var jsonObj = this.nativeJSON.decode(cleanData);
     var jsonObj = JSON.parse(cleanData);
-    if ( jsonObj ) {        
+    if ( jsonObj ) {
       outputDoc = this.jsonFormatter.jsonToHTML(jsonObj, callback, this.uri);
     } else {
       throw "There was no object!";
@@ -219,11 +219,11 @@ if(is_json || is_jsonp){
   }
 
 
-  var links = '<link rel="stylesheet" type="text/css" href="'+chrome.extension.getURL("default.css")+'">' + 
+  var links = '<link rel="stylesheet" type="text/css" href="'+chrome.extension.getURL("default.css")+'">' +
               '<script type="text/javascript" src="'+chrome.extension.getURL("default.js")+'"></script>';
   document.body.innerHTML = links + outputDoc;
-  
-}
-else {
+
+//}
+//else {
   // console.log("JSONView: this is not json, not formatting.");
-}
+//}
